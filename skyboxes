@@ -1,0 +1,63 @@
+local sky = game:GetService('Lighting'):FindFirstChild('Sky')
+
+-- grey
+local function greySkybox()
+	sky.SkyboxBk = 'rbxassetid://15876597103'
+	sky.SkyboxDn = 'rbxassetid://15876592775'
+	sky.SkyboxFt = 'rbxassetid://15876640231'
+	sky.SkyboxLf = 'rbxassetid://15876638420'
+	sky.SkyboxRt = 'rbxassetid://15876595486'
+	sky.SkyboxUp = 'rbxassetid://15876639348'
+end
+-- red blood 
+local function redBloodSkybox()
+	sky.SkyboxBk = 'rbxassetid://108929045660200'
+	sky.SkyboxDn = 'rbxassetid://78646480540009'
+	sky.SkyboxFt = 'rbxassetid://90546017435179'
+	sky.SkyboxLf = 'rbxassetid://109838453114563'
+	sky.SkyboxRt = 'rbxassetid://94190734796082'
+	sky.SkyboxUp = 'rbxassetid://126944775797063'
+end
+
+-- abysall blues
+local function abysallblueSkybox()
+	sky.SkyboxBk = 'rbxassetid://16269815885'
+	sky.SkyboxDn = 'rbxassetid://16269839652'
+	sky.SkyboxFt = 'rbxassetid://16269798011'
+	sky.SkyboxLf = 'rbxassetid://16269813852'
+	sky.SkyboxRt = 'rbxassetid://16269814948'
+	sky.SkyboxUp = 'rbxassetid://16269829700'
+end
+
+-- Hallowen orange
+local function hallowenSkybox()
+	sky.SkyboxBk = 'rbxassetid://10735998453'
+	sky.SkyboxDn = 'rbxassetid://10735997670'
+	sky.SkyboxFt = 'rbxassetid://10735998943'
+	sky.SkyboxLf = 'rbxassetid://10735998682'
+	sky.SkyboxRt = 'rbxassetid://10735998096'
+	sky.SkyboxUp = 'rbxassetid://10735997102'
+end
+
+
+-- Caged Beast
+local function cagedbeastSkybox()
+	sky.SkyboxBk = 'rbxassetid://100717462124891'
+	sky.SkyboxDn = 'rbxassetid://99419325764670'
+	sky.SkyboxFt = 'rbxassetid://110109858023307'
+	sky.SkyboxLf = 'rbxassetid://79024854946964'
+	sky.SkyboxRt = 'rbxassetid://140516331245253'
+	sky.SkyboxUp = 'rbxassetid://128364186959855'
+end
+
+-- Toxic Clouds
+local function toxiccloudsSkybox()
+	sky.SkyboxBk = 'rbxassetid://921882045'
+	sky.SkyboxDn = 'rbxassetid://921881907'
+	sky.SkyboxFt = 'rbxassetid://921882121'
+	sky.SkyboxLf = 'rbxassetid://921881811'
+	sky.SkyboxRt = 'rbxassetid://921881989'
+	sky.SkyboxUp = 'rbxassetid://921882259'
+end
+
+
