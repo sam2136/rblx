@@ -7,7 +7,6 @@ local plrs = game.Players
 local plr = plrs.LocalPlayer
 local char = plr.Character or plr.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
-
 -- Mouse --
 
 local mouse = plr:GetMouse()
@@ -19,10 +18,12 @@ local UIS = game:GetService("UserInputService")
 
 -- Variables --
 
+local AutoKillEnabled = false
+local strengthEnabled = false
 local lockEnabled = false
 local specificTargetEnabled = false
 local selectedTarget = nil
-
+local teleportDebounce = {}
 -- Update character references on respawn
 plr.CharacterAdded:Connect(function(newChar)
     char = newChar
@@ -81,6 +82,70 @@ local function findNearbyPlayer()
         end
     end
     return nil
+end
+
+local function SetMaxResponse()
+    local success, result = pcall(function()
+        local gps = workspace:FindFirstChild("GrabParts")
+        if gps then
+            local dp = gps:FindFirstChild("DragPart")
+            if dp then
+                local ap = dp:FindFirstChild("AlignPosition")
+                if ap then
+                    ap.Responsiveness = 200
+                    return true
+                end
+            end
+        end
+        return false
+    end)
+    
+    if not success then
+        print("Error in SetMaxResponse:", result)
+    end
+end
+
+
+local function AutoKill()
+    local gps = workspace:FindFirstChild("GrabParts")
+    if not gps then return end
+    
+    local gp = gps:FindFirstChild("DragPart")
+    if not gp then return end
+    gp.CanCollide = true
+    -- 2. Получаем список всех деталей, которые СЕЙЧАС касаются нашего триггера
+    local touchingParts = gp:GetTouchingParts()
+
+    -- 3. Проходимся по каждой коснувшейся детали
+    for _, part in pairs(touchingParts) do
+        local character = part.Parent
+        local player = plrs:GetPlayerFromCharacter(character) -- plrs - ваша глобальная переменная
+
+        -- 4. Проверяем, что это игрок, и это не мы (plr - ваша глобальная переменная)
+        if player and player ~= plr then
+            
+            -- 5. Проверяем debounce: если мы только что его телепортировали, переходим к следующей детали
+            if teleportDebounce[player.UserId] then continue end
+
+            local targetHrp = character:FindFirstChild("HumanoidRootPart")
+            if targetHrp then
+                print("Обнаружено касание от " .. player.Name .. ". Телепортирую.")
+                
+                -- Отмечаем, что мы телепортируем этого игрока
+                teleportDebounce[player.UserId] = true
+
+                -- 6. Телепортируем его в нужную точку
+                targetHrp.CFrame = CFrame.new(-930.202515, -98.6741409, -92.9015274, 0.136398539, -1.79208914e-08, 0.990654051, -3.79907767e-08, 1, 2.3320732e-08, -0.990654051, -4.08166301e-08, 0.136398539)
+                
+                -- Через секунду разрешаем снова его телепортировать
+                task.wait(1)
+                teleportDebounce[player.UserId] = nil
+
+                -- 7. Выходим из цикла, так как мы уже обработали одного игрока в этом кадре
+                break
+            end
+        end
+    end
 end
 
 local function lockOnTarget()
@@ -185,6 +250,28 @@ local specificTargetToggle = mainTab:Toggle({
         if state then
             targetDropdown:Refresh(GetPlayers())
         end
+    end
+})
+
+local strengthToggle = mainTab:Toggle({
+    Title = "Max Strength",
+    Desc = "",
+    Icon = "bird",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        strengthEnabled = state
+    end
+})
+
+local autokillToggle = mainTab:Toggle({
+    Title = "Auto Kill",
+    Desc = "",
+    Icon = "bird",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        AutoKillEnabled = state
     end
 })
 
@@ -320,6 +407,10 @@ spawn(function()
     while true do
         if lockEnabled then
             lockOnTarget()
+        elseif strengthEnabled then
+            SetMaxResponse()
+        elseif AutoKillEnabled then
+            AutoKill()
         end
         wait(0.1)
     end
