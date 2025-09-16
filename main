@@ -1,0 +1,338 @@
+-- Skyboxes -- 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/sam2136/rblx/refs/heads/main/skyboxes"))()
+
+-- Ingame locals --
+
+local plrs = game.Players
+local plr = plrs.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+-- Mouse --
+
+local mouse = plr:GetMouse()
+local camera = workspace.CurrentCamera
+
+-- Services --
+
+local UIS = game:GetService("UserInputService")
+
+-- Variables --
+
+local lockEnabled = false
+local specificTargetEnabled = false
+local selectedTarget = nil
+
+-- Update character references on respawn
+plr.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    hrp = newChar:WaitForChild("HumanoidRootPart")
+end)
+
+-- Functions --
+local function GetPlayers()
+    local dd_array = {}
+    for _, v in pairs(plrs:GetChildren()) do
+        if v.Name ~= plr.Name then
+            table.insert(dd_array, v.Name)
+        end
+    end
+    return dd_array
+end
+
+local function isPlayerHeld(player)
+    if player and player:FindFirstChild("IsHeld") then
+        return player.IsHeld.Value
+    end
+    return false
+end
+
+local function findNearbyPlayer()
+    if not char or not hrp then 
+        char = plr.Character
+        if char then
+            hrp = char:FindFirstChild("HumanoidRootPart")
+        end
+        if not char or not hrp then return end
+    end
+    
+    local myPos = hrp.Position
+    
+    if specificTargetEnabled and selectedTarget then
+        local targetPlayer = plrs:FindFirstChild(selectedTarget)
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            if not isPlayerHeld(targetPlayer) then
+                return targetPlayer.Character
+            end
+        end
+        return nil
+    end
+    
+    for _, player in pairs(plrs:GetPlayers()) do
+        if player ~= plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            if not isPlayerHeld(player) then
+                local targetPos = player.Character.HumanoidRootPart.Position
+                local distance = (myPos - targetPos).Magnitude
+                
+                if distance <= 18 then
+                    return player.Character
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function lockOnTarget()
+    if not lockEnabled then return end
+    
+    local target = findNearbyPlayer()
+    if target and target:FindFirstChild("HumanoidRootPart") then
+        local originalCFrame = camera.CFrame  
+        camera.CFrame = CFrame.lookAt(camera.CFrame.Position, target.HumanoidRootPart.Position)
+        wait(0.05)
+        mouse1click()
+        wait(0.05)
+        camera.CFrame = originalCFrame
+    end
+end
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Window = WindUI:CreateWindow({
+    Title = "FTAP",
+    Icon = "door-open",
+    Author = "Teo & Zero",
+    Folder = "FTAP_Config_ZERTEO",
+
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+
+    Background = "https://giffiles.alphacoders.com/207/207972.gif", 
+})
+
+WindUI:Notify({
+    Title = "",
+    Content = "Press F1 to hide/show the window",
+    Duration = 3,
+    Icon = "mail",
+})
+
+-- Tabs
+local mainTab = Window:Tab({
+    Title = "Main",
+    Icon = "circle-plus",
+    Locked = false,
+})
+
+local visualTab = Window:Tab({
+    Title = "Visuals",
+    Icon = "flower",
+    Locked = false,
+})
+
+local extrasTab = Window:Tab({
+    Title = "Extras",
+    Icon = "cog",
+    Locked = false,
+})
+
+-- Binds Buttons --
+local toggleWindowBind = extrasTab:Keybind({
+    Title = "Windows toggle bind",
+    Desc = "Bind",
+    Value = "F1",
+    Callback = function(v)
+        Window:Toggle()
+    end
+})
+
+local lockNearestEnemyToggle = mainTab:Toggle({
+    Title = "Lock nearest enemy",
+    Desc = "",
+    Icon = "bird",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        lockEnabled = state
+    end
+})
+
+local targetDropdown = mainTab:Dropdown({
+    Title = "Target player: ",
+    Values = GetPlayers(),
+    Value = "None",
+    Callback = function(option) 
+        selectedTarget = option
+    end
+})
+
+local specificTargetToggle = mainTab:Toggle({
+    Title = "Target specific player",
+    Desc = "Only target selected player",
+    Icon = "target",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        specificTargetEnabled = state
+        if state then
+            targetDropdown:Refresh(GetPlayers())
+        end
+    end
+})
+
+local palletBind = mainTab:Keybind({
+    Title = "Place pallet under you",
+    Desc = "Bind",
+    Value = "T",
+    Callback = function(v)
+        if hrp then
+            game:GetService("ReplicatedStorage"):WaitForChild("MenuToys"):WaitForChild("SpawnToyRemoteFunction"):InvokeServer(unpack({"PalletLightBrown",CFrame.new(hrp.CFrame.X, hrp.CFrame.Y-2, hrp.CFrame.Z+20),Vector3.new(0, 0, 0)}))
+        end
+    end
+})
+
+local skyboxDropdown = visualTab:Dropdown({
+    Title = "Skybox",
+    Values = { "Halloween orange", "Grey", "Red Blood", "Abysall Blue", "Caged Beast Blue", "Toxic Clouds Green" },
+    v = "",
+    Callback = function(v) 
+        if v == 'Halloween orange' then
+            hallowenSkybox()
+        elseif v == 'Grey' then
+            greySkybox()
+        elseif v == 'Red Blood' then
+            redBloodSkybox()
+        elseif v == 'Abysall Blue' then
+            abysallblueSkybox()
+        elseif v == 'Caged Beast Blue' then
+            cagedbeastSkybox()
+        elseif v == 'Toxic Clouds Green' then
+            toxiccloudsSkybox()
+        end
+    end
+})
+
+local oceanColorpicker = visualTab:Colorpicker({
+    Title = "Ocean color",
+    Desc = "",
+    Default = Color3.fromRGB(0, 255, 0),
+    Transparency = 0,
+    Locked = false,
+    Callback = function(color) 
+        for _, oceanpart in pairs(workspace.Map.AlwaysHereTweenedObjects.Ocean.Object.ObjectModel:GetChildren()) do
+            oceanpart.Color = color
+        end
+    end
+})
+
+local treeColorpicker = visualTab:Colorpicker({
+    Title = "Grass color",
+    Desc = "",
+    Default = Color3.fromRGB(0, 255, 0),
+    Transparency = 0,
+    Locked = false,
+    Callback = function(color) 
+        for _, grasspart in pairs(workspace.Map:GetDescendants()) do
+            if string.find(string.lower(grasspart.Name), 'grass') then
+                if grasspart:IsA('Part') or grasspart:IsA('CornerWedgePart') then
+                    grasspart.Color = color
+                end
+            end
+        end
+    end
+})
+
+local rockColorpicker = visualTab:Colorpicker({
+    Title = "Rock color",
+    Desc = "",
+    Default = Color3.fromRGB(0, 255, 0),
+    Transparency = 0,
+    Locked = false,
+    Callback = function(color) 
+        for _, grasspart in pairs(workspace.Map:GetDescendants()) do  
+            if grasspart.Name == 'Rock' or grasspart.Name == 'Dirt' and grasspart:IsA('Part') or grasspart:IsA('MeshPart') then
+                grasspart.Color = color
+            end
+        end
+    end
+})
+
+local treeRemoverButton = visualTab:Button({
+    Title = "Remove trees",
+    Desc = "",
+    Locked = false,
+    Callback = function()
+        workspace.Map.MapProps:Destroy()
+        workspace.Plots.Plot5.House.SakuraTree:Destroy()
+        workspace.Plots.Plot5.House:GetChildren()[4]:Destroy()
+    end
+})
+
+local timeSlider = visualTab:Slider({
+    Title = "Time",
+    Step = 1,
+    
+    Value = {
+        Min = 0,
+        Max = 24,
+        Default = 12,
+    },
+    Callback = function(value)
+        game:GetService("Lighting").ClockTime = value
+    end
+})
+
+local fogSlider = visualTab:Slider({
+    Title = "Fog end",
+    Step = 500,
+    
+    Value = {
+        Min = 0,
+        Max = 50000,
+        Default = 10000,
+    },
+    Callback = function(value)
+        game:GetService("Lighting").FogEnd = value
+    end
+})
+
+
+local fogColorpicker = visualTab:Colorpicker({
+    Title = "Fog color",
+    Desc = "",
+    Default = Color3.fromRGB(255, 255, 255),
+    Transparency = 0,
+    Locked = false,
+    Callback = function(color) 
+        game:GetService("Lighting").FogColor = color
+    end
+})
+
+spawn(function()
+    while true do
+        if lockEnabled then
+            lockOnTarget()
+        end
+        wait(0.1)
+    end
+end)
+
+plrs.PlayerAdded:Connect(function()
+    if specificTargetEnabled then
+        targetDropdown:Refresh(GetPlayers())
+    end
+end)
+
+plrs.PlayerRemoving:Connect(function()
+    if specificTargetEnabled then
+        targetDropdown:Refresh(GetPlayers())
+    end
+end)
